@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Particle Studio</title>
+<title>Gesture Particle Studio</title>
 
 <style>
 
@@ -15,65 +15,52 @@ background: radial-gradient(circle,#0f172a,#020617);
 
 /* UI PANEL */
 
-.ui-panel{
+.ui{
 position:absolute;
-top:25px;
-left:25px;
-width:270px;
+top:20px;
+left:20px;
+width:260px;
 padding:20px;
-background:rgba(255,255,255,0.05);
-backdrop-filter: blur(15px);
 border-radius:15px;
+
+background:rgba(255,255,255,0.05);
+backdrop-filter:blur(15px);
 border:1px solid rgba(255,255,255,0.1);
+
 color:white;
-box-shadow:0 10px 40px rgba(0,0,0,0.6);
 }
 
-.ui-panel h2{
-margin:0;
-margin-bottom:15px;
-font-weight:600;
-}
-
-/* TEMPLATE BUTTONS */
-
-.template-grid{
+.templates{
 display:grid;
 grid-template-columns:1fr 1fr;
-gap:10px;
+gap:8px;
+margin-top:10px;
 }
 
-.template-btn{
+button{
 
-padding:10px;
 border:none;
-border-radius:10px;
+padding:10px;
+border-radius:8px;
 cursor:pointer;
 
-background:linear-gradient(145deg,#1e293b,#020617);
+background:#1e293b;
 color:white;
 
-transition:0.3s;
+transition:.3s;
 }
 
-.template-btn:hover{
-
+button:hover{
+background:#6366f1;
 transform:scale(1.05);
-background:linear-gradient(145deg,#6366f1,#4338ca);
-
-}
-
-.color-section{
-margin-top:20px;
 }
 
 input[type=color]{
 width:100%;
-height:40px;
+height:35px;
+margin-top:10px;
 border:none;
-border-radius:8px;
-margin-top:8px;
-cursor:pointer;
+border-radius:6px;
 }
 
 video{
@@ -85,27 +72,23 @@ display:none;
 
 <body>
 
-<div class="ui-panel">
+<div class="ui">
 
-<h2>✨ Particle Studio</h2>
+<h3>Particle Studio</h3>
 
-<div class="template-grid">
+<div class="templates">
 
-<button class="template-btn" data-template="heart">❤️ Heart</button>
-<button class="template-btn" data-template="flower">🌸 Flower</button>
-<button class="template-btn" data-template="sphere">🪐 Saturn</button>
-<button class="template-btn" data-template="buddha">🧘 Buddha</button>
-<button class="template-btn" data-template="fireworks">🎆 Fireworks</button>
-
-</div>
-
-<div class="color-section">
-<label>Particle Color</label>
-<input type="color" id="colorPicker" value="#ff0066">
-</div>
+<button data-t="sphere">🪐 Saturn</button>
+<button data-t="heart">❤️ Heart</button>
+<button data-t="flower">🌸 Flower</button>
+<button data-t="fireworks">🎆 Fireworks</button>
 
 </div>
 
+<label>Color</label>
+<input type="color" id="color" value="#ff0066">
+
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.150.0/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
@@ -115,212 +98,196 @@ display:none;
 
 /* THREE JS SETUP */
 
-let scene,camera,renderer,particles;
-let particleCount = 2000;
+let scene = new THREE.Scene()
 
-init();
-animate();
-
-function init(){
-
-scene = new THREE.Scene();
-
-camera = new THREE.PerspectiveCamera(
+let camera = new THREE.PerspectiveCamera(
 75,
 window.innerWidth/window.innerHeight,
 0.1,
 1000
-);
+)
 
-camera.position.z = 4;
+camera.position.z = 4
 
-renderer = new THREE.WebGLRenderer({antialias:true});
-renderer.setSize(window.innerWidth,window.innerHeight);
-document.body.appendChild(renderer.domElement);
+let renderer = new THREE.WebGLRenderer({antialias:false})
+renderer.setSize(window.innerWidth,window.innerHeight)
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,1.5))
+document.body.appendChild(renderer.domElement)
 
-createParticles("sphere");
+let particles
+let particleCount = 800
 
-window.addEventListener("resize",()=>{
+createParticles("sphere")
 
-camera.aspect = window.innerWidth/window.innerHeight;
-camera.updateProjectionMatrix();
-renderer.setSize(window.innerWidth,window.innerHeight);
-
-});
-
-}
-
-
-/* PARTICLE GENERATOR */
+/* PARTICLES */
 
 function createParticles(type){
 
-if(particles) scene.remove(particles);
+if(particles) scene.remove(particles)
 
-let geometry = new THREE.BufferGeometry();
-let positions = [];
+let geometry = new THREE.BufferGeometry()
+let pos=[]
 
 for(let i=0;i<particleCount;i++){
 
-let x,y,z;
+let x,y,z
 
-if(type==="sphere"){
+if(type=="sphere"){
 
-let r = 1.5*Math.random();
-let theta = Math.random()*Math.PI*2;
-let phi = Math.random()*Math.PI;
+let r=1.5*Math.random()
+let theta=Math.random()*Math.PI*2
+let phi=Math.random()*Math.PI
 
-x = r*Math.sin(phi)*Math.cos(theta);
-y = r*Math.sin(phi)*Math.sin(theta);
-z = r*Math.cos(phi);
-
-}
-
-if(type==="heart"){
-
-let t = Math.random()*Math.PI*2;
-
-x = 16*Math.pow(Math.sin(t),3)/20;
-y = (13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t))/20;
-z = (Math.random()-0.5);
+x=r*Math.sin(phi)*Math.cos(theta)
+y=r*Math.sin(phi)*Math.sin(theta)
+z=r*Math.cos(phi)
 
 }
 
-if(type==="flower"){
+if(type=="heart"){
 
-let t = Math.random()*Math.PI*2;
+let t=Math.random()*Math.PI*2
 
-x = Math.cos(t)*(1+0.5*Math.cos(6*t));
-y = Math.sin(t)*(1+0.5*Math.cos(6*t));
-z = (Math.random()-0.5);
-
-}
-
-if(type==="fireworks"){
-
-x = (Math.random()-0.5)*2;
-y = (Math.random()-0.5)*2;
-z = (Math.random()-0.5)*2;
+x=16*Math.pow(Math.sin(t),3)/20
+y=(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t))/20
+z=(Math.random()-0.5)
 
 }
 
-if(type==="buddha"){
+if(type=="flower"){
 
-x = (Math.random()-0.5)*1.5;
-y = (Math.random()-0.5)*2;
-z = (Math.random()-0.5)*1.5;
+let t=Math.random()*Math.PI*2
+
+x=Math.cos(t)*(1+0.5*Math.cos(6*t))
+y=Math.sin(t)*(1+0.5*Math.cos(6*t))
+z=(Math.random()-0.5)
 
 }
 
-positions.push(x,y,z);
+if(type=="fireworks"){
+
+x=(Math.random()-0.5)*2
+y=(Math.random()-0.5)*2
+z=(Math.random()-0.5)*2
+
+}
+
+pos.push(x,y,z)
 
 }
 
 geometry.setAttribute(
-'position',
-new THREE.Float32BufferAttribute(positions,3)
-);
+"position",
+new THREE.Float32BufferAttribute(pos,3)
+)
 
 let material = new THREE.PointsMaterial({
-
 size:0.03,
-color:document.getElementById("colorPicker").value
+color:document.getElementById("color").value
+})
 
-});
+particles = new THREE.Points(geometry,material)
 
-particles = new THREE.Points(geometry,material);
-
-scene.add(particles);
+scene.add(particles)
 
 }
 
+/* UI BUTTONS */
+
+document.querySelectorAll("button").forEach(b=>{
+b.onclick=()=>createParticles(b.dataset.t)
+})
+
+document.getElementById("color").oninput=e=>{
+particles.material.color.set(e.target.value)
+}
 
 /* ANIMATION */
 
 function animate(){
 
-requestAnimationFrame(animate);
+requestAnimationFrame(animate)
 
-particles.rotation.y += 0.002;
+particles.rotation.y+=0.002
 
-renderer.render(scene,camera);
+renderer.render(scene,camera)
 
 }
 
-
-/* TEMPLATE BUTTONS */
-
-document.querySelectorAll(".template-btn").forEach(btn=>{
-
-btn.onclick=()=>{
-
-createParticles(btn.dataset.template);
-
-};
-
-});
-
-
-/* COLOR PICKER */
-
-document.getElementById("colorPicker").oninput=(e)=>{
-
-particles.material.color.set(e.target.value);
-
-};
-
-
+animate()
 
 /* HAND TRACKING */
 
-const video = document.createElement("video");
+let lastDistance = 0
+let lastTime = Date.now()
+
+const video=document.createElement("video")
 
 const hands = new Hands({
-locateFile:file=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
-});
+locateFile:(file)=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+})
 
 hands.setOptions({
-
 maxNumHands:2,
-modelComplexity:1,
-minDetectionConfidence:0.7,
-minTrackingConfidence:0.7
-
-});
+modelComplexity:0,
+minDetectionConfidence:0.6,
+minTrackingConfidence:0.6
+})
 
 hands.onResults(results=>{
 
-if(results.multiHandLandmarks.length===2){
+if(results.multiHandLandmarks.length==2){
 
-let h1 = results.multiHandLandmarks[0][8];
-let h2 = results.multiHandLandmarks[1][8];
+let h1 = results.multiHandLandmarks[0][8]
+let h2 = results.multiHandLandmarks[1][8]
 
-let dx = h1.x - h2.x;
-let dy = h1.y - h2.y;
+let dx=h1.x-h2.x
+let dy=h1.y-h2.y
 
-let distance = Math.sqrt(dx*dx + dy*dy);
+let dist=Math.sqrt(dx*dx+dy*dy)
 
-let scale = distance * 6;
+let now=Date.now()
+let velocity=Math.abs(dist-lastDistance)/(now-lastTime)
 
-particles.scale.set(scale,scale,scale);
+lastDistance=dist
+lastTime=now
+
+/* SCALE CONTROL */
+
+let scale = dist*6
+particles.scale.set(scale,scale,scale)
+
+/* SUDDEN GESTURE EXPLOSION */
+
+if(velocity>0.003){
+
+let p=particles.geometry.attributes.position.array
+
+for(let i=0;i<p.length;i++){
+
+p[i]+= (Math.random()-0.5)*0.2
 
 }
 
-});
+particles.geometry.attributes.position.needsUpdate=true
 
+}
 
-const cam = new Camera(video,{
+}
 
-onFrame: async()=>{
-await hands.send({image:video});
+})
+
+/* CAMERA */
+
+const cam=new Camera(video,{
+onFrame:async()=>{
+await hands.send({image:video})
 },
+width:320,
+height:240
+})
 
-width:640,
-height:480
-
-});
-
-cam.start();
+cam.start()
 
 </script>
 
